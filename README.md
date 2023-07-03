@@ -1,6 +1,4 @@
 # Work  is in progress
-Below is tghe plan:
-1. Pine script to draw 
-  a. trendline support resistance 
-  b. support / resistance.
-  c. breakout 
+The indicator uses EMA cross over and volume to place the order. It works ain any timeframe. 
+It has a set of input parameters. It uses Volume to place orders. 
+
