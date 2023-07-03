@@ -1,1 +1,64 @@
-# Script is in progress
+//@version=5
+indicator("EMA Cross with 200",overlay = true)
+
+calcType = input.string ("EMA",title = "Select Calc. Type", options = ["EMA","RSI"])
+fastInput = input(9, "Fast length")
+slowInput = input(26, "Slow length")
+triggerInput  = input(200, "Benchmark EMA")
+rsiInput = input(21,"Select RSI")
+groupNm = "Look Back Data"
+leftBars = input(2,"No. of Bars to check Left", group = groupNm)
+rightBars=input(2,"No. of Bars to check Right", group = groupNm)
+VolumelookBack = input.int(2,"Volume Bars to look back", group = groupNm, options = [1,2,3])
+VolumeIncrease = input.float(20,"Volume increase % ", group = groupNm )
+
+
+plotSig = false
+// Plot based on EMA
+fastEMA = ta.ema(close, fastInput)
+slowEMA = ta.ema(close, slowInput)
+triggerEMA = ta.ema(close, triggerInput)
+// Get MACD
+[macdLine, signalLine, histLine] = ta.macd(close, 5, 9, 8)
+// Get Volume
+
+plot(fastEMA, color = color.red)
+plot(slowEMA, color = color.green)
+plot(triggerEMA, color = color.white)
+
+calc_BS(fema,sema,lbak,pctIncr)=>
+    BreakOut=false
+    pctVal = 1 + (pctIncr/100)
+    str = "val: (0) " + str.tostring(volume) + "--"
+    for i = 1 to lbak
+        str := str  + "-- i(" + str.tostring(i) + ") " + str.tostring(volume[i])
+        if volume > (pctVal * volume[i])
+            BreakOut := true
+            
+       
+    BSig = ta.crossover(fastEMA, slowEMA ) and BreakOut
+    SSig = ta.crossover(slowEMA, fastEMA ) and BreakOut
+    if (barstate.islast)
+        txt = "Your value here, ex: " + str.tostring(str)
+        label.new(bar_index, 310, txt)
+    [BSig , SSig]
+   
+
+[BuySig , SellSig ] = calc_BS(fastEMA , slowEMA, VolumelookBack ,VolumeIncrease )
+plotchar(bar_index, "Bar Index", "", location = location.top)
+
+plotshape(BuySig, location = location.belowbar, text = "Buy", textcolor = color.white,style = shape.triangleup, color  = color.green ,  size = size.small,offset=-1)
+plotshape(SellSig, location = location.abovebar, text = "Sell", textcolor = color.white, style = shape.triangledown, color  = color.red , size = size.small,offset=-1)
+
+//plot(rsiValue, color = color.purple )
+
+
+ph = ta.pivothigh(leftBars, rightBars)
+pl = ta.pivotlow(close, leftBars, rightBars)
+
+plot(ph, style=plot.style_cross, linewidth=3, color= color.orange, offset=-rightBars)
+//plotshape(ph,style = shape.flag, color = color.lime, text = "TP", textcolor = color.white, location = location.abovebar, offset=-1)
+
+plot(pl, style=plot.style_cross, linewidth=3, color= color.white, offset=-rightBars )
+// plotshape(pl, style=shape.cross,  color= color.white, offset=-rightBars , location = location.belowbar, size=size.auto)
+
